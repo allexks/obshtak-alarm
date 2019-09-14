@@ -31,16 +31,29 @@ const unsigned int TEMPO = 120; // bpm
 
 void fireAlarm();
 
+bool ignoreFirstHighSignal = false;
+
 void setup() {
     pinMode(PIR_SENSOR, INPUT);
     pinMode(PIEZZO, OUTPUT);
     pinMode(LED, OUTPUT);
 
     delay(8000); // enables one to setup the device before it triggers the alarm
+    if (digitalRead(PIR_SENSOR) == HIGH) {
+        // sometimes the sensor is high
+        // at the beginning
+        // for some period of time
+        ignoreFirstHighSignal = true;
+    }
 }
 
 void loop() {
-    if (digitalRead(PIR_SENSOR) == HIGH) {
+    int signalState = digitalRead(PIR_SENSOR);
+    if (ignoreFirstHighSignal && signalState == LOW) {
+        // first high signal has now gone low
+        // proceed as usual
+        ignoreFirstHighSignal = false;
+    } else if (signalState == HIGH) {
         digitalWrite(LED, HIGH);
         fireAlarm();
     }
